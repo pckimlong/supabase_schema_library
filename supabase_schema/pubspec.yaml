@@ -1,0 +1,21 @@
+name: supabase_schema
+description: "A new Flutter package project."
+version: 0.0.1
+resolution: workspace
+repository: https://github.com/pckimlong/supabase_schema_library
+homepage: https://github.com/pckimlong/supabase_schema_library
+issue_tracker: https://github.com/pckimlong/supabase_schema_library/issues
+
+
+environment:
+  sdk: ^3.9.0-333.2.beta
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
