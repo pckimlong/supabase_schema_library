@@ -6,3 +6,5 @@ environment:
 workspace:
   - supabase_schema
   - supabase_schema_generator
+dev_dependencies:
+  melos: ^7.3.0

@@ -1,0 +1,33 @@
+name: supabase_schema_library
+
+packages:
+  - supabase_schema
+  - supabase_schema_generator
+  - supabase_schema/example
+
+scripts:
+  analyze:
+    run: dart analyze .
+    exec:
+      concurrency: 1
+    description: Run `dart analyze` in all packages.
+
+  test:
+    run: flutter test
+    exec:
+      concurrency: 1
+    description: Run `flutter test` in all packages.
+    packageFilters:
+      dirExists: test
+
+  format:
+    run: dart format .
+    exec:
+      concurrency: 1
+    description: Run `dart format` in all packages.
+
+  doc:
+    run: dart doc .
+    exec:
+      concurrency: 1
+    description: Generate documentation for all packages.
