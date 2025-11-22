@@ -1,0 +1,44 @@
+# name: Publish to Pub.dev
+
+# on:
+#   push:
+#     tags:
+#       - 'v*'
+#   workflow_dispatch:
+
+# jobs:
+#   publish:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       id-token: write # Required for authentication using OIDC
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - uses: subosito/flutter-action@v2
+#         with:
+#           flutter-version: '3.24.0'
+#           channel: 'stable'
+
+#       - name: Setup Pub Credentials
+#         shell: bash
+#         env:
+#           PUB_CREDENTIALS: ${{ secrets.PUB_CREDENTIALS }}
+#         run: |
+#           if [ -z "$PUB_CREDENTIALS" ]; then
+#             echo "PUB_CREDENTIALS secret is missing. Skipping credential setup."
+#           else
+#             mkdir -p ~/.config/dart
+#             echo "$PUB_CREDENTIALS" > ~/.config/dart/pub-credentials.json
+#           fi
+
+#       - name: Publish supabase_schema
+#         working-directory: supabase_schema
+#         run: |
+#           dart pub get
+#           dart pub publish --force
+
+#       - name: Publish supabase_schema_generator
+#         working-directory: supabase_schema_generator
+#         run: |
+#           dart pub get
+#           dart pub publish --force

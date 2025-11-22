@@ -18,7 +18,7 @@
 // - Schema: UserSchema
 // - Table: users
 // - Base model: User
-// - Base fields: 4
+// - Base fields: 5
 // - Models (1): CreateUserModel
 // --------------------------------------------------------------------------
 
@@ -62,6 +62,7 @@ sealed class User with _$User {
     @JsonKey(name: "name") required String name,
     @JsonKey(name: "email") required String email,
     @JsonKey(name: "created_at") required DateTime createdAt,
+    @JsonKey(name: "joinUserId") required User joinUserId,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
@@ -72,9 +73,11 @@ sealed class User with _$User {
   static const String nameKey = "name";
   static const String emailKey = "email";
   static const String createdAtKey = "created_at";
+  static const String joinUserIdKey = "joinUserId";
 
   // These for safer select statements
-  static String get selectColumns => 'id,name,email,created_at';
+  static String get selectColumns =>
+      'id,name,email,created_at,joinUserId:${User.tableName}!join_user_id(${User.selectColumns})';
 }
 
 @freezed
@@ -87,6 +90,8 @@ sealed class CreateUserModel with _$CreateUserModel {
     @JsonKey(name: "name") required String name,
     @JsonKey(name: "email") required String email,
     @JsonKey(name: "created_at") required DateTime createdAt,
+    @JsonKey(name: "user") required User user,
+    @JsonKey(name: "joinUser2Id") required User joinUser2Id,
   }) = _CreateUserModel;
 
   factory CreateUserModel.fromJson(Map<String, dynamic> json) =>
@@ -98,6 +103,9 @@ sealed class CreateUserModel with _$CreateUserModel {
   static const String nameKey = "name";
   static const String emailKey = "email";
   static const String createdAtKey = "created_at";
+  static const String userKey = "user";
+  static const String joinUser2IdKey = "joinUser2Id";
 
-  static String get selectColumns => 'id,name,email,created_at';
+  static String get selectColumns =>
+      'id,name,email,created_at,user,joinUser2Id:${User.tableName}!join_user2_id(${User.selectColumns})';
 }

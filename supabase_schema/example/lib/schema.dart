@@ -7,6 +7,7 @@ class UserSchema extends SupabaseSchema {
   final name = Field<String>('name');
   final email = Field<String>('email');
   final createdAt = Field<DateTime>('created_at');
+  final joinUserId = Field.join<User>().withForeignKey('join_user_id');
 
   @override
   List<Model> get models => [
@@ -16,7 +17,7 @@ class UserSchema extends SupabaseSchema {
       email,
       createdAt,
       Field<User>('user'),
-      Field.join<User>().withForeignKey('join_user_id'),
+      Field.join<User>().withForeignKey('join_user2_id'),
     ]),
   ];
 }

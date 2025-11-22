@@ -244,6 +244,10 @@ class ModelFieldIR {
   final bool makeNullable; // override request in model
   final String? aliasAs; // alternative DTO name
   final bool isInheritedFromBase; // flagged when included via inheritAll
+  final bool isJoin; // whether this is a join field
+  final String? joinForeignKey; // foreign key for joins
+  final String? joinCandidateKey; // candidate key for joins
+  final String? joinTargetType; // resolved target type for joins
 
   ModelFieldIR({
     required this.origin,
@@ -254,6 +258,10 @@ class ModelFieldIR {
     required this.makeNullable,
     this.aliasAs,
     required this.isInheritedFromBase,
+    this.isJoin = false,
+    this.joinForeignKey,
+    this.joinCandidateKey,
+    this.joinTargetType,
   });
 
   Map<String, Object?> toJson() => {
@@ -265,6 +273,10 @@ class ModelFieldIR {
     'makeNullable': makeNullable,
     'aliasAs': aliasAs,
     'isInheritedFromBase': isInheritedFromBase,
+    'isJoin': isJoin,
+    'joinForeignKey': joinForeignKey,
+    'joinCandidateKey': joinCandidateKey,
+    'joinTargetType': joinTargetType,
   };
 }
 
@@ -613,50 +625,96 @@ ModelFieldIR? _parseModelFieldExpr(Expression expr, List<SchemaFieldIR> base) {
 
   // Detect base-ref chain
   Expression root = chain.first;
+  bool isFieldStaticCall = false; // Declared here so it's in scope for adhoc check later
+
   if (root is SimpleIdentifier || root is PropertyAccess || root is PrefixedIdentifier) {
     final baseName = _extractSimpleName(root);
-    bool makeNullable = false;
-    String? aliasAs;
-    for (final n in chain.whereType<MethodInvocation>()) {
-      switch (n.methodName.name) {
-        case 'nullable':
-          makeNullable = true;
-          break;
-        case 'aliasAs':
-          aliasAs = _firstStringArg(n.argumentList) ?? aliasAs;
-          break;
+
+    // Check if this is actually a static call on Field (e.g. Field.join)
+    // If the baseName is 'Field', we treat it as adhoc, UNLESS there happens to be a base field named 'Field'
+    // (which is unlikely but possible). However, the usage `Field.join` strongly implies the static utility.
+    // We'll prioritize the static utility interpretation if it looks like a method call on Field.
+    if (baseName == 'Field') {
+      // Check if there's a method invocation on this root
+      for (final n in chain) {
+        if (n is MethodInvocation && n.target != null) {
+          final targetName = _extractSimpleName(n.target!);
+          if (targetName == 'Field') {
+            isFieldStaticCall = true;
+            break;
+          }
+        }
       }
     }
-    final baseMeta = base.firstWhere(
-      (e) => e.name == baseName,
-      orElse: () => SchemaFieldIR(
-        name: baseName,
-        kind: 'unknown',
-        storageKey: null,
-        dartType: null,
-        isNullable: null,
-      ),
-    );
-    return ModelFieldIR(
-      origin: 'base',
-      baseName: baseName,
-      storageKey: baseMeta.storageKey,
-      dartType: baseMeta.dartType,
-      baseIsNullable: baseMeta.isNullable,
-      makeNullable: makeNullable,
-      aliasAs: aliasAs,
-      isInheritedFromBase: false,
-    );
+
+    if (!isFieldStaticCall) {
+      bool makeNullable = false;
+      String? aliasAs;
+      for (final n in chain.whereType<MethodInvocation>()) {
+        switch (n.methodName.name) {
+          case 'nullable':
+            makeNullable = true;
+            break;
+          case 'aliasAs':
+            aliasAs = _firstStringArg(n.argumentList) ?? aliasAs;
+            break;
+        }
+      }
+      final baseMeta = base.firstWhere(
+        (e) => e.name == baseName,
+        orElse: () => SchemaFieldIR(
+          name: baseName,
+          kind: 'unknown',
+          storageKey: null,
+          dartType: null,
+          isNullable: null,
+        ),
+      );
+
+      // If we found a base field, OR if it's not 'Field', we treat it as a base ref.
+      // If it IS 'Field' but we didn't find a base field for it, we might fall through to adhoc handling
+      // if we didn't return here. But currently we return a 'base' origin field even if unknown.
+      // So we need to be careful.
+      // If baseName is 'Field' and it is NOT in base fields, we should probably treat it as adhoc
+      // (constructor or static).
+      if (baseName != 'Field' || baseMeta.kind != 'unknown') {
+        return ModelFieldIR(
+          origin: 'base',
+          baseName: baseName,
+          storageKey: baseMeta.storageKey,
+          dartType: baseMeta.dartType,
+          baseIsNullable: baseMeta.isNullable,
+          makeNullable: makeNullable,
+          aliasAs: aliasAs,
+          isInheritedFromBase: false,
+        );
+      }
+    }
   }
 
   // Detect adhoc field chain
-  if (root is InstanceCreationExpression ||
+  // Cases:
+  // - InstanceCreationExpression: Field<T>(...) when parsed as a constructor
+  // - MethodInvocation with target=Field: Field.join<T>(), Field.intId(), etc.
+  // - MethodInvocation with null target: Field<T>(...) when parsed as a method call
+  // - root is SimpleIdentifier 'Field' with isFieldStaticCall=true (Field.join path)
+  final isAdhocFieldChain =
+      root is InstanceCreationExpression ||
       (root is MethodInvocation &&
-          root.target is SimpleIdentifier &&
-          (root.target as SimpleIdentifier).name == 'Field')) {
+          (root.target == null ||
+              (root.target is SimpleIdentifier &&
+                  (root.target as SimpleIdentifier).name == 'Field'))) ||
+      (root is SimpleIdentifier && (root).name == 'Field' && isFieldStaticCall);
+
+  if (isAdhocFieldChain) {
     String? dartType;
     String? storageKey;
     bool baseIsNullable = false;
+    bool isJoin = false;
+    String? joinForeignKey;
+    String? joinCandidateKey;
+    String? joinTargetType;
+
     for (final n in chain) {
       if (n is InstanceCreationExpression) {
         final typeArgs =
@@ -665,14 +723,24 @@ ModelFieldIR? _parseModelFieldExpr(Expression expr, List<SchemaFieldIR> base) {
           dartType = typeArgs.first.toSource();
         } else {
           final typeSrc = n.constructorName.type.toSource();
-          final m = RegExp(r'<(.+)>').firstMatch(typeSrc);
+          final m = RegExp(r'\<(.+)\>').firstMatch(typeSrc);
           if (m != null) dartType = m.group(1)?.trim();
         }
         baseIsNullable = (dartType ?? '').trim().endsWith('?');
         storageKey = storageKey ?? _firstStringArg(n.argumentList);
       }
       if (n is MethodInvocation) {
-        if (n.target is SimpleIdentifier && (n.target as SimpleIdentifier).name == 'Field') {
+        // Handle Field<T>('key') parsed as MethodInvocation with null target
+        if (n.target == null && n.methodName.name == 'Field') {
+          final targs = n.typeArguments?.arguments ?? const <TypeAnnotation>[];
+          if (targs.isNotEmpty) {
+            dartType = targs.first.toSource();
+            baseIsNullable = dartType.trim().endsWith('?');
+          }
+          storageKey = storageKey ?? _firstStringArg(n.argumentList);
+        }
+        // Handle Field.join<T>(), Field.intId(), Field.stringId()
+        else if (n.target is SimpleIdentifier && (n.target as SimpleIdentifier).name == 'Field') {
           final method = n.methodName.name;
           if (method == 'intId') {
             dartType = 'int';
@@ -681,14 +749,19 @@ ModelFieldIR? _parseModelFieldExpr(Expression expr, List<SchemaFieldIR> base) {
             dartType = 'String';
             storageKey = storageKey ?? _firstStringArg(n.argumentList) ?? 'id';
           } else if (method == 'join') {
+            isJoin = true;
             final targs = n.typeArguments?.arguments ?? const <TypeAnnotation>[];
             if (targs.isNotEmpty) {
               dartType = targs.first.toSource();
               baseIsNullable = dartType.trim().endsWith('?');
+              joinTargetType = _extractJoinTargetType(targs.first);
             }
           }
         } else if (n.methodName.name == 'withForeignKey') {
-          storageKey = storageKey ?? _firstStringArg(n.argumentList);
+          joinForeignKey = _firstStringArg(n.argumentList);
+          storageKey = storageKey ?? joinForeignKey;
+        } else if (n.methodName.name == 'withCandidateKey') {
+          joinCandidateKey = _firstStringArg(n.argumentList);
         }
       }
     }
@@ -715,6 +788,10 @@ ModelFieldIR? _parseModelFieldExpr(Expression expr, List<SchemaFieldIR> base) {
       makeNullable: makeNullable,
       aliasAs: aliasAs,
       isInheritedFromBase: false,
+      isJoin: isJoin,
+      joinForeignKey: joinForeignKey,
+      joinCandidateKey: joinCandidateKey,
+      joinTargetType: joinTargetType ?? (isJoin ? dartType : null),
     );
   }
 

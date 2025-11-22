@@ -343,13 +343,16 @@ _ResolvedFieldEntry? _resolveModelFieldEntry(
     dartType = _ensureNullableType(dartType);
   }
 
-  final jsonKey = field.storageKey ?? propertyName;
+  final jsonKey = field.isJoin ? propertyName : (field.storageKey ?? propertyName);
 
   final resolved = _ResolvedModelField(
     propertyName: propertyName,
     jsonKey: jsonKey,
     dartType: dartType,
-    isJoin: false,
+    isJoin: field.isJoin,
+    joinForeignKey: field.joinForeignKey,
+    joinCandidateKey: field.joinCandidateKey,
+    joinTargetType: field.joinTargetType ?? (field.isJoin ? dartType : null),
   );
 
   return _ResolvedFieldEntry(resolved);
