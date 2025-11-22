@@ -31,3 +31,15 @@ scripts:
     exec:
       concurrency: 1
     description: Generate documentation for all packages.
+
+command:
+  version:
+    # Generate commit links in package changelogs.
+    linkToCommits: true
+    # Only allow versioning to happen on main branch.
+    branch: main
+    # A message to include in the commit created by melos version.
+    message: |
+      chore(release): publish packages
+
+      {new_package_versions}
