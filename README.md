@@ -1,0 +1,8 @@
+- Short description
+- How it work? define schema, it generate typesafe id, select statement as model class
+- Simple sample code
+- Installation using command line for dart package
+- Why use lean_builder? it faster, separate builder so we can generate freezed class after it
+- Example, define schema, then run builder
+- Detail walkthrough, how to generate ID, join class
+- Usage with supaabse, show select statement. Supabase.instance.client.from...

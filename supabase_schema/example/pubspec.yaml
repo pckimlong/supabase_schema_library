@@ -1,0 +1,26 @@
+name: example
+description: A simple example of using supabase_schema_library.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ^3.9.0-333.2.beta
+
+dependencies:
+  supabase_schema:
+    path: ../../supabase_schema
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.8.1
+
+dev_dependencies:
+  lean_builder: ^0.1.1
+  supabase_schema_generator:
+    path: ../../supabase_schema_generator
+  freezed: ^3.2.3
+  json_serializable: ^6.7.1
+  lints: ^3.0.0
+  build_runner: ^2.4.8
+
+dependency_overrides:
+  supabase_schema:
+    path: ../../supabase_schema
