@@ -4,7 +4,7 @@ publish_to: none
 version: 1.0.0
 
 environment:
-  sdk: ^3.9.0-333.2.beta
+  sdk: ^3.10.0-0
 
 dependencies:
   supabase_schema:

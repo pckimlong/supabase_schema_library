@@ -1,5 +1,5 @@
 name: supabase_schema
-description: "A new Flutter package project."
+description: "Simple Supabase schema generator for Dart"
 version: 0.0.1
 resolution: workspace
 repository: https://github.com/pckimlong/supabase_schema_library
@@ -8,11 +8,11 @@ issue_tracker: https://github.com/pckimlong/supabase_schema_library/issues
 
 
 environment:
-  sdk: ^3.9.0-333.2.beta
+  sdk: ^3.10.0
   flutter: ">=1.17.0"
 
 dependencies:
-  meta: ^1.16.0
+  meta: ^1.17.0
   freezed_annotation: ^3.1.0
   flutter:
     sdk: flutter
@@ -21,4 +21,4 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  lean_builder: ^0.1.1
+  lean_builder: ^0.1.2

@@ -1,6 +1,5 @@
 name: supabase_schema_library
 repository: https://github.com/pckimlong/supabase_schema_library
-publish_to: none
 environment:
   sdk: ^3.10.0-0
 

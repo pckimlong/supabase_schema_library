@@ -1,5 +1,5 @@
 name: supabase_schema_generator
-description: "A new Flutter package project."
+description: "A code generator for supabase_schema to generate Supabase schema definitions."
 version: 0.0.1
 resolution: workspace
 repository: https://github.com/pckimlong/supabase_schema_library
@@ -7,7 +7,7 @@ homepage: https://github.com/pckimlong/supabase_schema_library
 issue_tracker: https://github.com/pckimlong/supabase_schema_library/issues
 
 environment:
-  sdk: ^3.9.0-333.2.beta
+  sdk: ^3.10.0
   flutter: ">=1.17.0"
 
 dependencies:
@@ -15,8 +15,8 @@ dependencies:
   flutter:
     sdk: flutter
   recase: ^4.1.0
-  lean_builder: ^0.1.1
-  analyzer: ^7.6.0
+  lean_builder: ^0.1.2
+  analyzer: ">=7.4.0 <9.0.0"
 
 dev_dependencies:
   flutter_test:
