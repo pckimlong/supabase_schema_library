@@ -76,15 +76,23 @@ class UserSchema extends SupabaseSchema {
 
 ### 2. Run the Generator
 
-Run the build runner to generate the code:
+The code generation process involves two steps:
 
+**Step 1: Generate the base schema file with lean_builder**
+```bash
+dart run lean_builder build
+```
+This creates the `.supabase.dart` file containing your schema definitions.
+
+**Step 2: Generate the nested files (freezed models, JSON serialization, etc.)**
 ```bash
 dart run build_runner build
 ```
+This processes the `.supabase.dart` file to generate the final models.
 
-Or watch for changes:
-
+Or watch for changes (runs both builders):
 ```bash
+dart run lean_builder watch &
 dart run build_runner watch
 ```
 
@@ -113,7 +121,17 @@ void main() async {
 
 ## Why `lean_builder`?
 
-We use `lean_builder` to ensure fast and efficient code generation. It separates the build process, allowing for better performance and compatibility with other code generators like `freezed`.
+We use a two-step code generation process for optimal performance and compatibility:
+
+1. **`lean_builder`** - First generates the base `.supabase.dart` file containing your schema definitions, typed IDs, and select statements
+2. **`build_runner`** - Then processes the generated file to create the final freezed models, JSON serialization, and other nested code
+
+This separation allows for:
+- Faster incremental builds (only re-generates what changed)
+- Better compatibility with other code generators
+- Cleaner dependency management between generated files
+
+**Important**: Always run `lean_builder` first to generate the `.supabase.dart` file, then run `build_runner` to process it. Running `build_runner` alone without the `.supabase.dart` file will not work correctly.
 
 ## Contributing
 

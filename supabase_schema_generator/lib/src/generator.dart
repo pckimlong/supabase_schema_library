@@ -416,7 +416,10 @@ String _camelCase(String value) {
 }
 
 void _generateIdClass(StringBuffer buffer, SchemaFieldIR idField, String idClassName) {
-  buffer.writeln('extension type $idClassName._(${idField.dartType} id) {');
+  buffer.writeln('extension type $idClassName._(${idField.dartType} value) {');
+  buffer.writeln(
+    '  factory $idClassName.fromValue(${idField.dartType} value) => $idClassName._(value);',
+  );
   buffer.writeln('  factory $idClassName.fromJson(dynamic value) {');
   buffer.writeln('    if (value is ${idField.dartType}) {');
   buffer.writeln('      return $idClassName._(value);');
@@ -428,19 +431,7 @@ void _generateIdClass(StringBuffer buffer, SchemaFieldIR idField, String idClass
   );
   buffer.writeln('    }');
   buffer.writeln('  }');
-  buffer.writeln('  ${idField.dartType} toJson() => id;');
-  buffer.writeln('  ${idField.dartType} call() => id;');
-  buffer.writeln('  ${idField.dartType} get value => id;');
-  if (idField.isNumber || idField.isString) {
-    final emptyValue = idField.isNumber ? -1 : '""';
-    buffer.writeln('  /// Creates an instance of $idClassName with a value of $emptyValue.');
-    buffer.writeln(
-      '  /// This is used to represent an empty or invalid $idClassName for placeholder or default values of form fields.',
-    );
-    buffer.writeln(
-      '  /// WARNING: This is not a valid $idClassName access it value through [value] or [toJson] will throw an error.',
-    );
-    buffer.writeln('  factory $idClassName.empty() => $idClassName._($emptyValue);');
-  }
+  buffer.writeln('  ${idField.dartType} toJson() => value;');
+  buffer.writeln('  ${idField.dartType} call() => value;');
   buffer.writeln('}');
 }
