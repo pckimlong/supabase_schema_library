@@ -162,7 +162,8 @@ class SchemaFieldIR {
   final String? idWrapperName; // from IdField.named('UserId')
   final String? joinForeignKey;
   final String? joinCandidateKey;
-  final String? joinTargetType; // resolved inner type for joins (e.g. SubCategory)
+  final String?
+  joinTargetType; // resolved inner type for joins (e.g. SubCategory)
 
   String get jsonKey => storageKey ?? name;
   bool get isString => dartType == 'String' || dartType == 'String?';
@@ -210,7 +211,8 @@ class ModelIR {
   final List<ModelFieldIR> fields; // explicit picks/additions
   final List<ModelFieldIR> inherited; // fields coming from inheritAll
   final List<String> mixins; // mixin type names from .withMixin() calls
-  final List<String> excludedMixins; // Schema-level mixins to exclude via .withoutMixin()
+  final List<String>
+  excludedMixins; // Schema-level mixins to exclude via .withoutMixin()
 
   ModelIR({
     required this.name,
@@ -335,7 +337,8 @@ SchemaFieldIR? _parseSchemaFieldInitializer(String fieldName, Expression init) {
       );
     }
     if (method == 'join') {
-      final targs = fieldStatic.typeArguments?.arguments ?? const <TypeAnnotation>[];
+      final targs =
+          fieldStatic.typeArguments?.arguments ?? const <TypeAnnotation>[];
       final dartType = targs.isNotEmpty ? targs.first.toSource() : null;
       final resolvedJoinTarget = targs.isNotEmpty
           ? _extractJoinTargetType(targs.first)
@@ -366,11 +369,16 @@ SchemaFieldIR? _parseSchemaFieldInitializer(String fieldName, Expression init) {
   }
 
   // Constructor case: Field<T>('key')
-  final ctor = chain.firstWhere((e) => e is InstanceCreationExpression, orElse: () => init);
+  final ctor = chain.firstWhere(
+    (e) => e is InstanceCreationExpression,
+    orElse: () => init,
+  );
   if (ctor is InstanceCreationExpression) {
     String? dartType;
     // Prefer reading from type arguments; fallback to parsing toSource
-    final typeArgs = ctor.constructorName.type.typeArguments?.arguments ?? const <TypeAnnotation>[];
+    final typeArgs =
+        ctor.constructorName.type.typeArguments?.arguments ??
+        const <TypeAnnotation>[];
     if (typeArgs.isNotEmpty) {
       dartType = typeArgs.first.toSource();
     } else {
@@ -625,9 +633,12 @@ ModelFieldIR? _parseModelFieldExpr(Expression expr, List<SchemaFieldIR> base) {
 
   // Detect base-ref chain
   Expression root = chain.first;
-  bool isFieldStaticCall = false; // Declared here so it's in scope for adhoc check later
+  bool isFieldStaticCall =
+      false; // Declared here so it's in scope for adhoc check later
 
-  if (root is SimpleIdentifier || root is PropertyAccess || root is PrefixedIdentifier) {
+  if (root is SimpleIdentifier ||
+      root is PropertyAccess ||
+      root is PrefixedIdentifier) {
     final baseName = _extractSimpleName(root);
 
     // Check if this is actually a static call on Field (e.g. Field.join)
@@ -718,7 +729,8 @@ ModelFieldIR? _parseModelFieldExpr(Expression expr, List<SchemaFieldIR> base) {
     for (final n in chain) {
       if (n is InstanceCreationExpression) {
         final typeArgs =
-            n.constructorName.type.typeArguments?.arguments ?? const <TypeAnnotation>[];
+            n.constructorName.type.typeArguments?.arguments ??
+            const <TypeAnnotation>[];
         if (typeArgs.isNotEmpty) {
           dartType = typeArgs.first.toSource();
         } else {
@@ -740,7 +752,8 @@ ModelFieldIR? _parseModelFieldExpr(Expression expr, List<SchemaFieldIR> base) {
           storageKey = storageKey ?? _firstStringArg(n.argumentList);
         }
         // Handle Field.join<T>(), Field.intId(), Field.stringId()
-        else if (n.target is SimpleIdentifier && (n.target as SimpleIdentifier).name == 'Field') {
+        else if (n.target is SimpleIdentifier &&
+            (n.target as SimpleIdentifier).name == 'Field') {
           final method = n.methodName.name;
           if (method == 'intId') {
             dartType = 'int';
@@ -750,7 +763,8 @@ ModelFieldIR? _parseModelFieldExpr(Expression expr, List<SchemaFieldIR> base) {
             storageKey = storageKey ?? _firstStringArg(n.argumentList) ?? 'id';
           } else if (method == 'join') {
             isJoin = true;
-            final targs = n.typeArguments?.arguments ?? const <TypeAnnotation>[];
+            final targs =
+                n.typeArguments?.arguments ?? const <TypeAnnotation>[];
             if (targs.isNotEmpty) {
               dartType = targs.first.toSource();
               baseIsNullable = dartType.trim().endsWith('?');
