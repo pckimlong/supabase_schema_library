@@ -2,6 +2,16 @@ name: Publish to Pub.dev
 
 on:
   workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Type of version bump'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
   push:
     tags:
       - 'v*'
@@ -11,12 +21,20 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # Required for authentication using OIDC
+      contents: write # Required for creating releases
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for changelog generation
 
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
 
       - name: Install Melos
         run: dart pub global activate melos
@@ -24,5 +42,48 @@ jobs:
       - name: Bootstrap Workspace
         run: melos bootstrap
 
+      - name: Version Bump (Manual Trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          melos version --no-git-tag-version ${{ github.event.inputs.version_type }}
+
+      - name: Generate Changelog
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          melos version --no-git-tag-version ${{ github.event.inputs.version_type }}
+          # Generate changelog entries for each package
+          for package in supabase_schema supabase_schema_generator; do
+            echo "## $package" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            if [ -f "$package/CHANGELOG.md" ]; then
+              tail -n +3 "$package/CHANGELOG.md" >> CHANGELOG.md
+              echo "" >> CHANGELOG.md
+            fi
+          done
+
+      - name: Commit and Tag (Manual Trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git add .
+          git commit -m "chore(release): publish packages
+
+          $(melos version --no-git-tag-version ${{ github.event.inputs.version_type }})"
+          git tag -a "v$(melos version --no-git-tag-version ${{ github.event.inputs.version_type }})" -m "Release v$(melos version --no-git-tag-version ${{ github.event.inputs.version_type }})"
+          git push origin main --follow-tags
+
       - name: Publish Packages
         run: melos publish --yes --no-dry-run
+
+      - name: Create GitHub Release
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v$(melos version --no-git-tag-version ${{ github.event.inputs.version_type }})
+          release_name: Release v$(melos version --no-git-tag-version ${{ github.event.inputs.version_type }})
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false

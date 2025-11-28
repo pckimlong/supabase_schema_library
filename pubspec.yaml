@@ -41,6 +41,12 @@ melos:
         concurrency: 1
       description: Generate documentation for all packages.
 
+    publish:
+      run: dart pub publish
+      description: Publish packages to pub.dev.
+      packageFilters:
+        no-private: true
+
   command:
     version:
       # Generate commit links in package changelogs.

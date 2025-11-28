@@ -136,3 +136,7 @@ This separation allows for:
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Releasing
+
+For information about how to release new versions to pub.dev, see [RELEASE.md](./RELEASE.md).
