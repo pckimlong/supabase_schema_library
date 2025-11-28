@@ -39,7 +39,8 @@ class SupabaseTableGenerator extends GeneratorForAnnotatedClass<Schema> {
     final idClassNames = <String>{};
     final idFields = schemaIR.baseFields.where((f) => f.kind == 'id').toList();
     for (final idField in idFields) {
-      final idClassName = idField.idWrapperName ?? '${schemaIR.baseModelClassName}Id';
+      final idClassName =
+          idField.idWrapperName ?? '${schemaIR.baseModelClassName}Id';
       if (!idClassNames.add(idClassName)) {
         throw ArgumentError(
           'Multiple ID fields in ${element.name} schema cannot have the same generated wrapper name. Please provide explicit names using IdField.named().',
@@ -60,13 +61,19 @@ String _generateBaseModelClass(SchemaIR schema) {
   final baseModelName = schema.baseModelClassName;
   final tableName = schema.tableName;
 
-  final fields = schema.baseFields.map((f) => _resolvedFieldFromSchemaField(f, schema)).toList();
+  final fields = schema.baseFields
+      .map((f) => _resolvedFieldFromSchemaField(f, schema))
+      .toList();
 
   // Build mixin clause from Schema-level mixins
-  final mixinClause = schema.mixins.isNotEmpty ? ', ${schema.mixins.join(', ')}' : '';
+  final mixinClause = schema.mixins.isNotEmpty
+      ? ', ${schema.mixins.join(', ')}'
+      : '';
 
   buffer.writeln('@freezed');
-  buffer.writeln('sealed class $baseModelName with _\$$baseModelName$mixinClause {');
+  buffer.writeln(
+    'sealed class $baseModelName with _\$$baseModelName$mixinClause {',
+  );
   buffer.writeln('  const $baseModelName._();');
   buffer.writeln();
   buffer.writeln('  @JsonSerializable(explicitToJson: true)');
@@ -90,11 +97,15 @@ String _generateBaseModelClass(SchemaIR schema) {
     '  factory $baseModelName.fromJson(Map<String, dynamic> json) => _\$${baseModelName}FromJson(json);',
   );
   buffer.writeln();
-  buffer.writeln('// These constrains can be helpful for queries, filter by etc.');
+  buffer.writeln(
+    '// These constrains can be helpful for queries, filter by etc.',
+  );
   buffer.writeln('  static const String tableName = "$tableName";');
 
   for (final field in fields) {
-    buffer.writeln('  static const String ${_camelCase(field.jsonKey)}Key = "${field.jsonKey}";');
+    buffer.writeln(
+      '  static const String ${_camelCase(field.jsonKey)}Key = "${field.jsonKey}";',
+    );
   }
 
   buffer.writeln();
@@ -117,14 +128,18 @@ Iterable<String> _generateModelClasses(SchemaIR schema) {
 
     // Merge Schema-level and Model-level mixins, filtering out excluded ones
     // 1. Start with Schema mixins, remove excluded ones
-    final schemaMixins = schema.mixins.where((m) => !model.excludedMixins.contains(m)).toList();
+    final schemaMixins = schema.mixins
+        .where((m) => !model.excludedMixins.contains(m))
+        .toList();
     // 2. Add Model-specific mixins
     final allMixins = [...schemaMixins, ...model.mixins];
     final mixinClause = allMixins.isNotEmpty ? ', ${allMixins.join(', ')}' : '';
 
     buffer.writeln();
     buffer.writeln('@freezed');
-    buffer.writeln('sealed class ${model.name} with _\$${model.name}$mixinClause {');
+    buffer.writeln(
+      'sealed class ${model.name} with _\$${model.name}$mixinClause {',
+    );
     buffer.writeln('  const ${model.name}._();');
     buffer.writeln();
     buffer.writeln('  @JsonSerializable(explicitToJson: true)');
@@ -155,7 +170,9 @@ Iterable<String> _generateModelClasses(SchemaIR schema) {
     buffer.writeln();
 
     for (final field in fields) {
-      buffer.writeln('  static const String ${_camelCase(field.jsonKey)}Key = "${field.jsonKey}";');
+      buffer.writeln(
+        '  static const String ${_camelCase(field.jsonKey)}Key = "${field.jsonKey}";',
+      );
     }
 
     buffer.writeln();
@@ -235,7 +252,10 @@ class _ResolvedFieldEntry {
   final String? replacePropertyName;
 }
 
-_ResolvedModelField _resolvedFieldFromSchemaField(SchemaFieldIR field, SchemaIR schema) {
+_ResolvedModelField _resolvedFieldFromSchemaField(
+  SchemaFieldIR field,
+  SchemaIR schema,
+) {
   final propertyName = _camelCase(field.name);
   // Use the wrapper name if this is an ID field with a named type
   final dartType = (field.isId)
@@ -285,7 +305,9 @@ List<_ResolvedModelField> _resolveModelFields(SchemaIR schema, ModelIR model) {
       }
     }
 
-    final existingIndex = resolved.indexWhere((f) => f.propertyName == entry.field.propertyName);
+    final existingIndex = resolved.indexWhere(
+      (f) => f.propertyName == entry.field.propertyName,
+    );
     if (existingIndex != -1) {
       resolved[existingIndex] = entry.field;
     } else {
@@ -327,7 +349,10 @@ _ResolvedFieldEntry? _resolveModelFieldEntry(
       joinTargetType: baseResolved.joinTargetType ?? baseResolved.dartType,
     );
 
-    return _ResolvedFieldEntry(resolved, replacePropertyName: baseResolved.propertyName);
+    return _ResolvedFieldEntry(
+      resolved,
+      replacePropertyName: baseResolved.propertyName,
+    );
   }
 
   final propertyName = _sanitizePropertyName(
@@ -343,7 +368,9 @@ _ResolvedFieldEntry? _resolveModelFieldEntry(
     dartType = _ensureNullableType(dartType);
   }
 
-  final jsonKey = field.isJoin ? propertyName : (field.storageKey ?? propertyName);
+  final jsonKey = field.isJoin
+      ? propertyName
+      : (field.storageKey ?? propertyName);
 
   final resolved = _ResolvedModelField(
     propertyName: propertyName,
@@ -365,9 +392,10 @@ String _composeSelectColumns(List<_ResolvedModelField> fields) {
   for (final field in fields) {
     if (field.isJoin) {
       final joinTypeSource = field.joinTargetType ?? field.dartType;
-      final joinType = (extractJoinTargetTypeFromString(joinTypeSource) ?? 'dynamic')
-          .replaceAll('?', '')
-          .replaceAll('!', '');
+      final joinType =
+          (extractJoinTargetTypeFromString(joinTypeSource) ?? 'dynamic')
+              .replaceAll('?', '')
+              .replaceAll('!', '');
       final selectStatement = "(\${$joinType.selectColumns})";
       final tableName = "\${$joinType.tableName}";
       final alias = field.propertyName;
@@ -390,7 +418,10 @@ String _composeSelectColumns(List<_ResolvedModelField> fields) {
     }
   }
 
-  return [columns.join(','), joins.join(',')].where((part) => part.isNotEmpty).join(',');
+  return [
+    columns.join(','),
+    joins.join(','),
+  ].where((part) => part.isNotEmpty).join(',');
 }
 
 String _ensureNullableType(String type) {
@@ -415,8 +446,15 @@ String _camelCase(String value) {
   return ReCase(value).camelCase;
 }
 
-void _generateIdClass(StringBuffer buffer, SchemaFieldIR idField, String idClassName) {
-  buffer.writeln('extension type $idClassName._(${idField.dartType} id) {');
+void _generateIdClass(
+  StringBuffer buffer,
+  SchemaFieldIR idField,
+  String idClassName,
+) {
+  buffer.writeln('extension type $idClassName._(${idField.dartType} value) {');
+  buffer.writeln(
+    '  factory $idClassName.fromValue(${idField.dartType} value) => $idClassName._(value);',
+  );
   buffer.writeln('  factory $idClassName.fromJson(dynamic value) {');
   buffer.writeln('    if (value is ${idField.dartType}) {');
   buffer.writeln('      return $idClassName._(value);');
@@ -428,19 +466,7 @@ void _generateIdClass(StringBuffer buffer, SchemaFieldIR idField, String idClass
   );
   buffer.writeln('    }');
   buffer.writeln('  }');
-  buffer.writeln('  ${idField.dartType} toJson() => id;');
-  buffer.writeln('  ${idField.dartType} call() => id;');
-  buffer.writeln('  ${idField.dartType} get value => id;');
-  if (idField.isNumber || idField.isString) {
-    final emptyValue = idField.isNumber ? -1 : '""';
-    buffer.writeln('  /// Creates an instance of $idClassName with a value of $emptyValue.');
-    buffer.writeln(
-      '  /// This is used to represent an empty or invalid $idClassName for placeholder or default values of form fields.',
-    );
-    buffer.writeln(
-      '  /// WARNING: This is not a valid $idClassName access it value through [value] or [toJson] will throw an error.',
-    );
-    buffer.writeln('  factory $idClassName.empty() => $idClassName._($emptyValue);');
-  }
+  buffer.writeln('  ${idField.dartType} toJson() => value;');
+  buffer.writeln('  ${idField.dartType} call() => value;');
   buffer.writeln('}');
 }

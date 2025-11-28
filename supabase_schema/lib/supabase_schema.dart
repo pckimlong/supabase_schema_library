@@ -60,10 +60,12 @@ class JoinField<T> extends BaseField<T> {
   const JoinField({this.foreignKey, this.candidateKey}) : super(key: null);
 
   @useResult
-  JoinField<T> withForeignKey(String key) => JoinField(foreignKey: key, candidateKey: candidateKey);
+  JoinField<T> withForeignKey(String key) =>
+      JoinField(foreignKey: key, candidateKey: candidateKey);
 
   @useResult
-  JoinField<T> withCandidateKey(String key) => JoinField(foreignKey: foreignKey, candidateKey: key);
+  JoinField<T> withCandidateKey(String key) =>
+      JoinField(foreignKey: foreignKey, candidateKey: key);
 }
 
 // -------------------------
@@ -81,10 +83,12 @@ class ModelField<T> {
   /// Alias the field in the DTO/model
   /// e.g. base field is 'id' but you want 'userId' in the DTO
   @useResult
-  ModelField<T> aliasAs(String name) => ModelField<T>(field, alias: name, isNullable: isNullable);
+  ModelField<T> aliasAs(String name) =>
+      ModelField<T>(field, alias: name, isNullable: isNullable);
 
   @useResult
-  ModelField<T> nullable() => ModelField<T>(field, alias: alias, isNullable: true);
+  ModelField<T> nullable() =>
+      ModelField<T>(field, alias: alias, isNullable: true);
 }
 
 extension DtoFieldOps<T> on BaseField<T> {
@@ -109,7 +113,8 @@ class Model {
   final List<BaseField> _excepts; // fields to omit from inheritance
   final String? _tableName; // optional table binding
   final List<Type> _mixins; // additional mixins for this model
-  final List<Type> _excludedMixins; // Schema-level mixins to exclude from this model
+  final List<Type>
+  _excludedMixins; // Schema-level mixins to exclude from this model
 
   const Model._(
     this._name,
@@ -122,15 +127,31 @@ class Model {
     this._excludedMixins,
   );
 
-  factory Model(String name) =>
-      Model._(name, const [], const [], false, const [], null, const [], const []);
+  factory Model(String name) => Model._(
+    name,
+    const [],
+    const [],
+    false,
+    const [],
+    null,
+    const [],
+    const [],
+  );
 
   // -------- Base selection APIs --------
 
   /// Mark that this model inherits fields from the base schema (generator resolves actual list).
   @useResult
-  Model inheritAllFromBase({List<BaseField> excepts = const []}) =>
-      Model._(_name, _fields, _dtoFields, true, [...excepts], _tableName, _mixins, _excludedMixins);
+  Model inheritAllFromBase({List<BaseField> excepts = const []}) => Model._(
+    _name,
+    _fields,
+    _dtoFields,
+    true,
+    [...excepts],
+    _tableName,
+    _mixins,
+    _excludedMixins,
+  );
 
   /// Select the fields for this model. Accepts BaseField and ModelField.
   @useResult

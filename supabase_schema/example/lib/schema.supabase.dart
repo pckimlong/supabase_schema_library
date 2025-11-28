@@ -30,7 +30,8 @@ part 'schema.supabase.freezed.dart';
 
 part 'schema.supabase.g.dart';
 
-extension type UserId._(int id) {
+extension type UserId._(int value) {
+  factory UserId.fromValue(int value) => UserId._(value);
   factory UserId.fromJson(dynamic value) {
     if (value is int) {
       return UserId._(value);
@@ -42,14 +43,8 @@ extension type UserId._(int id) {
       );
     }
   }
-  int toJson() => id;
-  int call() => id;
-  int get value => id;
-
-  /// Creates an instance of UserId with a value of -1.
-  /// This is used to represent an empty or invalid UserId for placeholder or default values of form fields.
-  /// WARNING: This is not a valid UserId access it value through [value] or [toJson] will throw an error.
-  factory UserId.empty() => UserId._(-1);
+  int toJson() => value;
+  int call() => value;
 }
 
 @freezed
