@@ -52,3 +52,21 @@ sealed class User with _$User {
   static String get selectColumns => 'id,name,...';
 }
 ```
+
+## Complex Types
+
+Nested generic field types are supported and generated into the Freezed factory with the usual `@JsonKey` mapping, e.g.:
+
+```dart
+@Schema(tableName: 'products')
+class ProductSchema extends SupabaseSchema {
+  final variants = Field<List<Map<String, dynamic>>>('variants');
+  final options = Field<Map<String, dynamic>>('options');
+  final tags = Field<List<String>?>('tags');
+
+  @override
+  List<Model> get models => [
+    Model('ProductDetailModel').fields([variants, options, tags]),
+  ];
+}
+```
