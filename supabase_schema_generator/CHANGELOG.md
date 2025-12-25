@@ -1,3 +1,7 @@
+## 0.0.3
+
+* Fix: Generate fields with nested generic types (e.g. `List<Map<String, dynamic>>`, `Map<String, dynamic>`, `List<String>?`) instead of silently dropping them.
+
 ## 0.0.2
 
 * **BREAKING**: Removed `.empty()` factory constructor from generated ID extension types

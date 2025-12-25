@@ -11,7 +11,7 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  supabase_schema: ^0.0.1
+  supabase_schema: ^0.0.2
   flutter:
     sdk: flutter
   recase: ^4.1.0

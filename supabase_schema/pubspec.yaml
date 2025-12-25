@@ -1,6 +1,6 @@
 name: supabase_schema
 description: "Simple Supabase schema generator for Dart"
-version: 0.0.3
+version: 0.0.2
 resolution: workspace
 repository: https://github.com/pckimlong/supabase_schema_library
 homepage: https://github.com/pckimlong/supabase_schema_library

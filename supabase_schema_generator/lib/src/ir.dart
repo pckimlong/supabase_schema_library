@@ -118,6 +118,12 @@ SchemaIR parseSchema(ClassElement element, ElementAnnotation annotation) {
   );
 }
 
+/// Exposed for regression tests; do not rely on this API.
+SchemaFieldIR? parseSchemaFieldInitializerForTesting(
+  String fieldName,
+  Expression init,
+) => _parseSchemaFieldInitializer(fieldName, init);
+
 class SchemaIR {
   final String schemaClass;
   final String tableName;
@@ -368,6 +374,22 @@ SchemaFieldIR? _parseSchemaFieldInitializer(String fieldName, Expression init) {
     }
   }
 
+  // Function-like invocation case: Field<T>('key') surfaced as MethodInvocation (target == null).
+  for (final n in chain.whereType<MethodInvocation>()) {
+    if (n.target == null && n.methodName.name == 'Field') {
+      final targs = n.typeArguments?.arguments ?? const <TypeAnnotation>[];
+      final dartType = targs.isNotEmpty ? targs.first.toSource() : null;
+      final key = _firstStringArg(n.argumentList) ?? fieldName;
+      return SchemaFieldIR(
+        name: fieldName,
+        kind: 'regular',
+        storageKey: key,
+        dartType: dartType,
+        isNullable: (dartType ?? '').trim().endsWith('?'),
+      );
+    }
+  }
+
   // Constructor case: Field<T>('key')
   final ctor = chain.firstWhere(
     (e) => e is InstanceCreationExpression,
@@ -399,7 +421,7 @@ SchemaFieldIR? _parseSchemaFieldInitializer(String fieldName, Expression init) {
   // Fallback: parse from source string patterns
   final src = init.toSource();
   // Field<T>('key')
-  final reCtor = RegExp(r'''^Field<([^>]+)>\((?:'([^']*)'|"([^"]*)")\)''');
+  final reCtor = RegExp(r'''^Field<(.+)>\((?:'([^']*)'|"([^"]*)")\)''');
   final mCtor = reCtor.firstMatch(src);
   if (mCtor != null) {
     final t = (mCtor.group(1) ?? '').trim();
@@ -431,7 +453,7 @@ SchemaFieldIR? _parseSchemaFieldInitializer(String fieldName, Expression init) {
   }
   // Field.join<T>().withForeignKey('...')
   final reJoin = RegExp(
-    r'''^Field\.join<([^>]+)>\(\)(?:\.withForeignKey\((?:'([^']*)'|"([^"]*)")\))?''',
+    r'''^Field\.join<(.+)>\(\)(?:\.withForeignKey\((?:'([^']*)'|"([^"]*)")\))?''',
   );
   final mJoin = reJoin.firstMatch(src);
   if (mJoin != null) {
