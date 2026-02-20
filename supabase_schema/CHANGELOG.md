@@ -1,3 +1,8 @@
+## 0.0.3
+
+* Bump `analyzer` constraint to `>=7.4.0 <11.0.0` (supports v10)
+* Bump `lean_builder` to `^0.1.7`
+
 ## 0.0.2
 
 * **BREAKING**: Removed `.empty()` factory constructor from generated ID extension types

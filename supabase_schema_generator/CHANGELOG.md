@@ -1,3 +1,9 @@
+## 0.0.4
+
+* Bump `analyzer` constraint to `>=7.4.0 <11.0.0` (supports v10)
+* Bump `lean_builder` to `^0.1.7`
+* Bump `supabase_schema` dependency to `^0.0.3`
+
 ## 0.0.3
 
 * Fix: Generate fields with nested generic types (e.g. `List<Map<String, dynamic>>`, `Map<String, dynamic>`, `List<String>?`) instead of silently dropping them.
