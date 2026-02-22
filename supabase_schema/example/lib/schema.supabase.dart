@@ -22,7 +22,9 @@
 // - Models (1): CreateUserModel
 // --------------------------------------------------------------------------
 
-// ignore_for_file: invalid_annotation_target
+// ignore_for_file: type=lint, invalid_annotation_target, unused_import
+
+import 'schema.dart';
 
 import 'package:supabase_schema/supabase_schema.dart';
 
