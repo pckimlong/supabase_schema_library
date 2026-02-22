@@ -28,8 +28,9 @@ class SupabaseTableGenerator extends GeneratorForAnnotatedClass<Schema> {
       '// **************************************************************************',
       '',
       metadataBanner,
-      '// ignore_for_file: invalid_annotation_target',
+      '// ignore_for_file: type=lint, invalid_annotation_target, unused_import',
       '',
+      _buildSourceLibraryImport(element),
       ..._collectLibraryImports(element),
       _buildPartDirective(element, 'freezed.dart'),
       _buildPartDirective(element, 'g.dart'),
@@ -192,9 +193,7 @@ String _buildIdClassSnippet(SchemaFieldIR idField, String idClassName) {
 
 Iterable<String> _collectLibraryImports(ClassElement element) sync* {
   final unit = element.library.compilationUnit;
-  final shortUrl = element.librarySrc.shortUri;
-  final baseName = shortUrl.pathSegments.last.split('.').first;
-  final generatedSuffix = '$baseName.supabase.dart';
+  final generatedSuffix = '${_sourceFileStem(element)}.supabase.dart';
   for (final directive in unit.directives.whereType<ImportDirective>()) {
     final uri = directive.uri.stringValue;
     if (uri == null) continue;
@@ -203,10 +202,26 @@ Iterable<String> _collectLibraryImports(ClassElement element) sync* {
   }
 }
 
+String _buildSourceLibraryImport(ClassElement element) {
+  return "import '${_sourceFileName(element)}';";
+}
+
 String _buildPartDirective(ClassElement element, String suffix) {
-  final shortUrl = element.librarySrc.shortUri;
-  final base = shortUrl.pathSegments.last.split('.').first;
+  final base = _sourceFileStem(element);
   return "part '$base.supabase.$suffix';";
+}
+
+String _sourceFileName(ClassElement element) {
+  final shortUrl = element.librarySrc.shortUri;
+  return shortUrl.pathSegments.last;
+}
+
+String _sourceFileStem(ClassElement element) {
+  final sourceFileName = _sourceFileName(element);
+  if (sourceFileName.endsWith('.dart')) {
+    return sourceFileName.substring(0, sourceFileName.length - '.dart'.length);
+  }
+  return sourceFileName;
 }
 
 String _buildMetadataBanner(SchemaIR schema) {
