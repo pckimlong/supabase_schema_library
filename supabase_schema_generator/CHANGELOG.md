@@ -1,3 +1,8 @@
+## 0.0.5
+
+* Generate an import of the source schema file in `.supabase.dart` outputs (for example, `user.supabase.dart` now imports `user.dart`) so source-defined types like enums are available.
+* Add generated-file ignores for lint-only warnings (`type=lint`, `invalid_annotation_target`, `unused_import`) to avoid CI lint/format check failures on generated code.
+
 ## 0.0.4
 
 * Bump `analyzer` constraint to `>=7.4.0 <11.0.0` (supports v10)
