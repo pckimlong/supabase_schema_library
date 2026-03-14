@@ -44,17 +44,17 @@ melos run test
 ## Releasing & Publishing
 
 1.  **Generate New Version:**
-    Run this command to calculate the next version, update changelogs, and create a git tag.
+    Update versions and changelogs before releasing.
     ```bash
-    melos version
+    melos version patch
     ```
     *Note: This will modify `pubspec.yaml` and `CHANGELOG.md` files.*
 
 2.  **Push Changes:**
-    Push the changes and the tags to GitHub.
+    Push the release commit to `main`.
     ```bash
-    git push --follow-tags
+    git push origin main
     ```
 
 3.  **Automated Publishing:**
-    The push will trigger the GitHub Action to publish the new versions to pub.dev automatically.
+    The `Release Tags` workflow detects package version bumps on `main`, creates package tags, and those tags trigger the pub.dev publish workflows automatically.

@@ -1,0 +1,28 @@
+name: Publish supabase_schema
+
+on:
+  push:
+    tags:
+      - 'supabase_schema-v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Publish supabase_schema to pub.dev
+        working-directory: supabase_schema
+        run: dart pub publish --force
