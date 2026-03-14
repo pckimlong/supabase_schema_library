@@ -1,0 +1,47 @@
+name: Publish supabase_schema_generator
+
+on:
+  push:
+    tags:
+      - 'supabase_schema_generator-v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Wait for runtime package version on pub.dev
+        run: |
+          REQUIRED_VERSION="$(awk '/supabase_schema:/{print $2; exit}' supabase_schema_generator/pubspec.yaml | sed 's/^\^//')"
+          URL="https://pub.dev/api/packages/supabase_schema/versions/${REQUIRED_VERSION}"
+
+          for attempt in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            if [ "$code" = "200" ]; then
+              echo "supabase_schema $REQUIRED_VERSION is available on pub.dev"
+              exit 0
+            fi
+
+            echo "Attempt $attempt: supabase_schema $REQUIRED_VERSION is not available yet (HTTP $code)"
+            sleep 20
+          done
+
+          echo "Timed out waiting for supabase_schema $REQUIRED_VERSION to appear on pub.dev"
+          exit 1
+
+      - name: Publish supabase_schema_generator to pub.dev
+        working-directory: supabase_schema_generator
+        run: dart pub publish --force

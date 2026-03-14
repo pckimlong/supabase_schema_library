@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Simple release script for local development
+# Local helper for preparing a release commit.
 # Usage: ./scripts/release.sh [patch|minor|major]
 
 set -e
@@ -32,18 +32,11 @@ melos run test || echo "ℹ️ No tests found"
 echo "🔍 Running analysis..."
 melos run analyze
 
-echo "📝 Bumping version ($VERSION_TYPE)..."
-melos version $VERSION_TYPE
+echo "📝 Bumping versions with Melos..."
+melos version "$VERSION_TYPE"
 
-echo "📋 Getting new version number..."
-NEW_VERSION=$(melos version --no-git-tag-version $VERSION_TYPE | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-echo "New version: $NEW_VERSION"
-
-echo "🏷️ Creating git tag..."
-git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
-
-echo "📤 Pushing to GitHub..."
-git push origin main --follow-tags
-
-echo "🎉 Release complete! v$NEW_VERSION has been tagged and pushed."
-echo "📦 The GitHub Actions workflow will now publish to pub.dev."
+echo "📤 Push the release commit to main when you're ready:"
+echo "   git push origin main"
+echo ""
+echo "GitHub Actions will detect the version bump on main, create package tags,"
+echo "and trigger the pub.dev publish workflows automatically."
