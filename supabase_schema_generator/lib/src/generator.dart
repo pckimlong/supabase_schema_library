@@ -1,39 +1,46 @@
-import 'dart:async';
-
+import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:lean_builder/builder.dart';
-import 'package:lean_builder/element.dart';
+import 'package:analyzer/dart/element/element.dart';
+import 'package:build/build.dart';
 import 'package:recase/recase.dart';
+import 'package:source_gen/source_gen.dart';
 import 'package:supabase_schema/supabase_schema.dart';
 
 import 'ir.dart';
 
-@LeanGenerator({'.supabase.dart'})
-class SupabaseTableGenerator extends GeneratorForAnnotatedClass<Schema> {
+class SupabaseTableGenerator extends GeneratorForAnnotation<Schema> {
   @override
-  FutureOr<Iterable<String>> generateForClass(
+  Future<String> generateForAnnotatedElement(
+    Element element,
+    ConstantReader annotation,
     BuildStep buildStep,
-    ClassElement element,
-    ElementAnnotation annotation,
-  ) {
-    final schemaIR = parseSchema(element, annotation);
+  ) async {
+    if (element is! ClassElement) {
+      throw InvalidGenerationSourceError(
+        '@Schema must annotate a class.',
+        element: element,
+      );
+    }
+    // Parse syntax directly: fields may reference models that this build has
+    // not generated yet, so their resolved types are not reliable here.
+    final unit = parseString(
+      content: await buildStep.readAsString(buildStep.inputId),
+    ).unit;
+    final classNode = unit.declarations
+        .whereType<ClassDeclaration>()
+        .firstWhere((node) => node.namePart.typeName.lexeme == element.name);
+    final schemaIR = parseSchema(classNode, annotation);
+    final sourceFileName = buildStep.inputId.pathSegments.last;
     final metadataBanner = _buildMetadataBanner(schemaIR);
 
     final pieces = <String>[
-      '// GENERATED CODE - DO NOT MODIFY BY HAND',
-      '// dart format width=80',
-      '',
-      '// **************************************************************************',
-      '// SupabaseTableGenerator',
-      '// **************************************************************************',
-      '',
       metadataBanner,
       '// ignore_for_file: type=lint, invalid_annotation_target, unused_import',
       '',
-      _buildSourceLibraryImport(element),
-      ..._collectLibraryImports(element),
-      _buildPartDirective(element, 'freezed.dart'),
-      _buildPartDirective(element, 'g.dart'),
+      "import '$sourceFileName';",
+      ..._collectLibraryImports(unit, sourceFileName),
+      _buildPartDirective(sourceFileName, 'freezed.dart'),
+      _buildPartDirective(sourceFileName, 'g.dart'),
     ];
 
     // Generate ID wrapper classes for each IdField.
@@ -53,7 +60,7 @@ class SupabaseTableGenerator extends GeneratorForAnnotatedClass<Schema> {
     pieces.add(_generateBaseModelClass(schemaIR));
     pieces.addAll(_generateModelClasses(schemaIR));
 
-    return pieces;
+    return pieces.join('\n\n');
   }
 }
 
@@ -191,38 +198,25 @@ String _buildIdClassSnippet(SchemaFieldIR idField, String idClassName) {
   return buffer.toString();
 }
 
-Iterable<String> _collectLibraryImports(ClassElement element) sync* {
-  final unit = element.library.compilationUnit;
-  final generatedSuffix = '${_sourceFileStem(element)}.supabase.dart';
+Iterable<String> _collectLibraryImports(
+  CompilationUnit unit,
+  String sourceFileName,
+) sync* {
+  final generatedSuffix = '${_sourceFileStem(sourceFileName)}.supabase.dart';
   for (final directive in unit.directives.whereType<ImportDirective>()) {
     final uri = directive.uri.stringValue;
-    if (uri == null) continue;
-    if (uri.endsWith(generatedSuffix)) continue;
+    if (uri == null || uri.endsWith(generatedSuffix)) continue;
     yield directive.toSource();
   }
 }
 
-String _buildSourceLibraryImport(ClassElement element) {
-  return "import '${_sourceFileName(element)}';";
-}
-
-String _buildPartDirective(ClassElement element, String suffix) {
-  final base = _sourceFileStem(element);
+String _buildPartDirective(String sourceFileName, String suffix) {
+  final base = _sourceFileStem(sourceFileName);
   return "part '$base.supabase.$suffix';";
 }
 
-String _sourceFileName(ClassElement element) {
-  final shortUrl = element.librarySrc.shortUri;
-  return shortUrl.pathSegments.last;
-}
-
-String _sourceFileStem(ClassElement element) {
-  final sourceFileName = _sourceFileName(element);
-  if (sourceFileName.endsWith('.dart')) {
-    return sourceFileName.substring(0, sourceFileName.length - '.dart'.length);
-  }
-  return sourceFileName;
-}
+String _sourceFileStem(String sourceFileName) =>
+    sourceFileName.substring(0, sourceFileName.length - '.dart'.length);
 
 String _buildMetadataBanner(SchemaIR schema) {
   final baseModelName = schema.baseModelClassName;

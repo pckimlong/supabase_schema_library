@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'schema.supabase.dart';
@@ -9,6 +9,7 @@ part of 'schema.supabase.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $UserCopyWith<User> get copyWith => _$UserCopyWithImpl<User>(this as User, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.joinUserId, joinUserId) || other.joinUserId == joinUserId));
+  final _this = this as User;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.joinUserId, _this.joinUserId) || other.joinUserId == _this.joinUserId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,email,createdAt,joinUserId);
+int get hashCode {
+  final _this = this as User;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.email,_this.createdAt,_this.joinUserId);
+}
 
 @override
 String toString() {
-  return 'User(id: $id, name: $name, email: $email, createdAt: $createdAt, joinUserId: $joinUserId)';
+  final _this = this as User;
+  return 'User(id: ${_this.id}, name: ${_this.name}, email: ${_this.email}, createdAt: ${_this.createdAt}, joinUserId: ${_this.joinUserId})';
 }
 
 
@@ -66,7 +72,7 @@ class _$UserCopyWithImpl<$Res>
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? createdAt = null,Object? joinUserId = null,}) {
-  return _then(_self.copyWith(
+  return _then(User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as UserId,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -238,16 +244,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.joinUserId, joinUserId) || other.joinUserId == joinUserId));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.joinUserId, joinUserId) || other.joinUserId == joinUserId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,email,createdAt,joinUserId);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,email,createdAt,joinUserId);
+}
 
 @override
 String toString() {
-  return 'User(id: $id, name: $name, email: $email, createdAt: $createdAt, joinUserId: $joinUserId)';
+    return 'User(id: $id, name: $name, email: $email, createdAt: $createdAt, joinUserId: $joinUserId)';
 }
 
 
@@ -315,16 +323,21 @@ $CreateUserModelCopyWith<CreateUserModel> get copyWith => _$CreateUserModelCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateUserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.user, user) || other.user == user)&&(identical(other.joinUser2Id, joinUser2Id) || other.joinUser2Id == joinUser2Id));
+  final _this = this as CreateUserModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateUserModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.user, _this.user) || other.user == _this.user)&&(identical(other.joinUser2Id, _this.joinUser2Id) || other.joinUser2Id == _this.joinUser2Id));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,email,createdAt,user,joinUser2Id);
+int get hashCode {
+  final _this = this as CreateUserModel;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.email,_this.createdAt,_this.user,_this.joinUser2Id);
+}
 
 @override
 String toString() {
-  return 'CreateUserModel(id: $id, name: $name, email: $email, createdAt: $createdAt, user: $user, joinUser2Id: $joinUser2Id)';
+  final _this = this as CreateUserModel;
+  return 'CreateUserModel(id: ${_this.id}, name: ${_this.name}, email: ${_this.email}, createdAt: ${_this.createdAt}, user: ${_this.user}, joinUser2Id: ${_this.joinUser2Id})';
 }
 
 
@@ -353,7 +366,7 @@ class _$CreateUserModelCopyWithImpl<$Res>
 /// Create a copy of CreateUserModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? createdAt = null,Object? user = null,Object? joinUser2Id = null,}) {
-  return _then(_self.copyWith(
+  return _then(CreateUserModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as UserId,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -536,16 +549,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateUserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.user, user) || other.user == user)&&(identical(other.joinUser2Id, joinUser2Id) || other.joinUser2Id == joinUser2Id));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateUserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.user, user) || other.user == user)&&(identical(other.joinUser2Id, joinUser2Id) || other.joinUser2Id == joinUser2Id));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,email,createdAt,user,joinUser2Id);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,email,createdAt,user,joinUser2Id);
+}
 
 @override
 String toString() {
-  return 'CreateUserModel(id: $id, name: $name, email: $email, createdAt: $createdAt, user: $user, joinUser2Id: $joinUser2Id)';
+    return 'CreateUserModel(id: $id, name: $name, email: $email, createdAt: $createdAt, user: $user, joinUser2Id: $joinUser2Id)';
 }
 
 

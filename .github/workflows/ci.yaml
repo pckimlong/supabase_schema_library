@@ -13,6 +13,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  codegen-compatibility:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: older-stack
+            args: --analyzer 13.3.0 --build-runner 2.15.1 --freezed 4.0.1 --json-serializable 6.13.2 --json-annotation 4.11.0
+          - name: analyzer-14-minimum
+            args: --analyzer 14.0.0
+          - name: latest-compatible
+            args: ""
+    name: Codegen (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Verify generation compatibility
+        run: python3 scripts/check_codegen.py ${{ matrix.args }}
+
   validate:
     runs-on: ubuntu-latest
 

@@ -4,23 +4,15 @@ This example demonstrates how to use the supabase_schema_library to generate typ
 
 ## Building the Example
 
-To generate the code for this example, run the following commands in sequence:
+Run this command from the example directory:
 
 ```bash
-# Step 1: Generate the base schema file
-dart run lean_builder build
-
-# Step 2: Generate the freezed models and other nested code
 dart run build_runner build
 ```
 
-Or for development, you can run both in watch mode:
+For development, one watcher handles every stage:
 
 ```bash
-# Terminal 1: Watch for schema changes
-dart run lean_builder watch
-
-# Terminal 2: Watch for generated file changes
 dart run build_runner watch
 ```
 
