@@ -1,40 +1,33 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:lean_builder/element.dart';
+import 'package:source_gen/source_gen.dart';
 
 // ------------ IR TYPES ------------
 
-SchemaIR parseSchema(ClassElement element, ElementAnnotation annotation) {
-  // 1) Extract annotation info
-  final schemaAnno = annotation.constant as ConstObject;
-  final tableName = schemaAnno.getString('tableName')!.value;
-  final className = schemaAnno.getString('className')?.value;
-  final baseModelName = schemaAnno.getString('baseModelName')?.value;
-
-  // 2) Extract base fields and models via AST from compilation unit (more reliable)
-  final classNode = _findClassNode(element);
+SchemaIR parseSchema(ClassDeclaration classNode, ConstantReader annotation) {
+  final tableName = annotation.read('tableName').stringValue;
+  final className = annotation.peek('className')?.stringValue;
+  final baseModelName = annotation.peek('baseModelName')?.stringValue;
   final baseFields = <SchemaFieldIR>[];
 
   // Extract mixins from annotation AST
   final mixinsList = <String>[];
-  if (classNode != null) {
-    for (final meta in classNode.metadata) {
-      // meta.name can be SimpleIdentifier or PrefixedIdentifier
-      final metaName = meta.name;
-      final annotationName = metaName is SimpleIdentifier
-          ? metaName.name
-          : (metaName is PrefixedIdentifier ? metaName.identifier.name : null);
+  for (final meta in classNode.metadata) {
+    // meta.name can be SimpleIdentifier or PrefixedIdentifier
+    final metaName = meta.name;
+    final annotationName = metaName is SimpleIdentifier
+        ? metaName.name
+        : (metaName is PrefixedIdentifier ? metaName.identifier.name : null);
 
-      if (annotationName == 'Schema') {
-        final args = meta.arguments;
-        if (args != null) {
-          for (final arg in args.arguments) {
-            if (arg is NamedExpression && arg.name.label.name == 'mixins') {
-              final expr = arg.expression;
-              if (expr is ListLiteral) {
-                for (final elem in expr.elements) {
-                  if (elem is SimpleIdentifier) {
-                    mixinsList.add(elem.name);
-                  }
+    if (annotationName == 'Schema') {
+      final args = meta.arguments;
+      if (args != null) {
+        for (final arg in args.arguments) {
+          if (arg is NamedArgument && arg.name.lexeme == 'mixins') {
+            final expr = arg.argumentExpression;
+            if (expr is ListLiteral) {
+              for (final elem in expr.elements) {
+                if (elem is SimpleIdentifier) {
+                  mixinsList.add(elem.name);
                 }
               }
             }
@@ -43,26 +36,15 @@ SchemaIR parseSchema(ClassElement element, ElementAnnotation annotation) {
       }
     }
   }
-  if (classNode != null) {
-    for (final member in classNode.members) {
-      if (member is FieldDeclaration) {
-        for (final v in member.fields.variables) {
-          final name = v.name.lexeme;
-          final init = v.initializer;
-          if (init == null) continue;
-          final parsed = _parseSchemaFieldInitializer(name, init);
-          if (parsed != null) baseFields.add(parsed);
-        }
+  for (final member in classNode.body.members) {
+    if (member is FieldDeclaration) {
+      for (final v in member.fields.variables) {
+        final name = v.name.lexeme;
+        final init = v.initializer;
+        if (init == null) continue;
+        final parsed = _parseSchemaFieldInitializer(name, init);
+        if (parsed != null) baseFields.add(parsed);
       }
-    }
-  } else {
-    // Fallback to element.fields (may miss initializers in some cases)
-    for (final f in element.fields) {
-      if (f.isStatic || f.isSynthetic) continue;
-      final init = f.initializer;
-      if (init == null) continue;
-      final parsed = _parseSchemaFieldInitializer(f.name, init);
-      if (parsed != null) baseFields.add(parsed);
     }
   }
 
@@ -71,44 +53,42 @@ SchemaIR parseSchema(ClassElement element, ElementAnnotation annotation) {
   final modelExprsSrc = <String>[];
   final modelChains = <List<String>>[];
   final modelChainSrc = <List<String>>[];
-  if (classNode != null) {
-    final getter = _findModelsGetter(classNode);
-    if (getter != null) {
-      final body = getter.body;
-      Expression? valueExpr;
-      if (body is ExpressionFunctionBody) {
-        valueExpr = body.expression;
-      } else if (body is BlockFunctionBody) {
-        for (final s in body.block.statements) {
-          if (s is ReturnStatement) {
-            valueExpr = s.expression;
-            break;
-          }
+  final getter = _findModelsGetter(classNode);
+  if (getter != null) {
+    final body = getter.body;
+    Expression? valueExpr;
+    if (body is ExpressionFunctionBody) {
+      valueExpr = body.expression;
+    } else if (body is BlockFunctionBody) {
+      for (final s in body.block.statements) {
+        if (s is ReturnStatement) {
+          valueExpr = s.expression;
+          break;
         }
       }
-      if (valueExpr is ListLiteral) {
-        for (final elem in valueExpr.elements) {
-          Expression? mexpr;
-          if (elem is Expression) {
-            mexpr = elem;
-          } else if (elem is SpreadElement) {
-            mexpr = elem.expression;
-          }
-          if (mexpr != null) {
-            modelExprsSrc.add(mexpr.toSource());
-            final ch = _flattenChain(mexpr);
-            modelChains.add(ch.map((e) => e.runtimeType.toString()).toList());
-            modelChainSrc.add(ch.map((e) => e.toSource()).toList());
-            final model = _parseModelExpression(mexpr, baseFields);
-            if (model != null) modelsIr.add(model);
-          }
+    }
+    if (valueExpr is ListLiteral) {
+      for (final elem in valueExpr.elements) {
+        Expression? mexpr;
+        if (elem is Expression) {
+          mexpr = elem;
+        } else if (elem is SpreadElement) {
+          mexpr = elem.expression;
+        }
+        if (mexpr != null) {
+          modelExprsSrc.add(mexpr.toSource());
+          final ch = _flattenChain(mexpr);
+          modelChains.add(ch.map((e) => e.runtimeType.toString()).toList());
+          modelChainSrc.add(ch.map((e) => e.toSource()).toList());
+          final model = _parseModelExpression(mexpr, baseFields);
+          if (model != null) modelsIr.add(model);
         }
       }
     }
   }
 
   return SchemaIR(
-    schemaClass: element.name,
+    schemaClass: classNode.namePart.typeName.lexeme,
     tableName: tableName,
     className: className,
     baseModelName: baseModelName,
@@ -290,16 +270,8 @@ class ModelFieldIR {
 
 // ------------ PARSERS ------------
 
-ClassDeclaration? _findClassNode(ClassElement element) {
-  final unit = element.library.compilationUnit;
-  for (final d in unit.declarations) {
-    if (d is ClassDeclaration && d.name.lexeme == element.name) return d;
-  }
-  return null;
-}
-
 MethodDeclaration? _findModelsGetter(ClassDeclaration clazz) {
-  for (final m in clazz.members) {
+  for (final m in clazz.body.members) {
     if (m is MethodDeclaration) {
       if (m.isGetter && m.name.lexeme == 'models') return m;
     }
@@ -513,8 +485,8 @@ ModelIR? _parseModelExpression(Expression expr, List<SchemaFieldIR> base) {
         case 'inheritAllFromBase':
           inheritAll = true;
           final arg = _findNamedArg(n.argumentList, 'excepts');
-          if (arg != null && arg.expression is ListLiteral) {
-            final list = arg.expression as ListLiteral;
+          if (arg != null && arg.argumentExpression is ListLiteral) {
+            final list = arg.argumentExpression as ListLiteral;
             for (final e in list.elements.whereType<Expression>()) {
               if (e is SimpleIdentifier) excepts.add(e.name);
             }
@@ -965,9 +937,9 @@ String? _firstStringArg(ArgumentList args) {
   return null;
 }
 
-NamedExpression? _findNamedArg(ArgumentList args, String name) {
+NamedArgument? _findNamedArg(ArgumentList args, String name) {
   for (final a in args.arguments) {
-    if (a is NamedExpression && a.name.label.name == name) return a;
+    if (a is NamedArgument && a.name.lexeme == name) return a;
   }
   return null;
 }

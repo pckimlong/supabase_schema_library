@@ -4,22 +4,21 @@ publish_to: none
 version: 1.0.0
 
 environment:
-  sdk: ^3.10.0-0
+  sdk: ^3.13.0
 
 dependencies:
   supabase_schema:
     path: ../../supabase_schema
   freezed_annotation: ^3.1.0
-  json_annotation: ^4.8.1
+  json_annotation: ^4.12.0
 
 dev_dependencies:
-  lean_builder: ^0.1.1
   supabase_schema_generator:
     path: ../../supabase_schema_generator
-  freezed: ^3.2.3
-  json_serializable: ^6.7.1
+  freezed: ^4.0.1
+  json_serializable: ^6.14.0
   lints: ^3.0.0
-  build_runner: ^2.4.8
+  build_runner: ^2.16.1
 
 dependency_overrides:
   supabase_schema:

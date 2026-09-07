@@ -1,22 +1,26 @@
 name: supabase_schema_generator
 description: "A code generator for supabase_schema to generate Supabase schema definitions."
-version: 0.0.5
+version: 0.0.6
 resolution: workspace
 repository: https://github.com/pckimlong/supabase_schema_library
 homepage: https://github.com/pckimlong/supabase_schema_library
 issue_tracker: https://github.com/pckimlong/supabase_schema_library/issues
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.11.0
   flutter: ">=1.17.0"
 
 dependencies:
-  supabase_schema: ^0.0.3
+  supabase_schema: ^0.0.4
   flutter:
     sdk: flutter
   recase: ^4.1.0
-  lean_builder: ^0.1.7
-  analyzer: ">=7.4.0 <11.0.0"
+  build: ^4.0.0
+  build_config: ^1.2.0
+  source_gen: ^4.2.0
+  # Keep both supported analyzer majors available to consuming generators.
+  # scripts/check_codegen.py and CI verify the lower bound and newest solve.
+  analyzer: ">=13.3.0 <15.0.0"
 
 dev_dependencies:
   flutter_test:

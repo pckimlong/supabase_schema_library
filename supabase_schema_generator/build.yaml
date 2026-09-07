@@ -1,0 +1,12 @@
+builders:
+  supabase_schema_generator:
+    import: "package:supabase_schema_generator/builder.dart"
+    builder_factories: ["supabaseSchemaBuilder"]
+    build_extensions: {".dart": [".supabase.dart"]}
+    auto_apply: dependents
+    build_to: source
+    runs_before: ["freezed:freezed", "json_serializable:json_serializable"]
+    applies_builders:
+      - "freezed:freezed"
+      - "json_serializable:json_serializable"
+      - "source_gen:combining_builder"

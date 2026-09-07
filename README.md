@@ -8,7 +8,7 @@ A powerful Flutter/Dart code generator for Supabase that automates the creation 
 - **Type-Safe IDs**: Generate strongly-typed IDs (using `extension type`) to prevent mixing up IDs from different tables.
 - **Smart Select Statements**: Generate type-safe select statements, including nested joins with correct Supabase syntax.
 - **Flexible Models**: Define multiple models (e.g., `User`, `CreateUserModel`) from a single schema definition.
-- **Performance**: Built on `lean_builder` for fast code generation.
+- **Single-command generation**: Generate schemas, Freezed models, and JSON serialization with `build_runner`.
 
 ## Packages
 
@@ -26,7 +26,6 @@ Add the dependencies to your `pubspec.yaml`:
 ```yaml
 dependencies:
   supabase_schema: latest_version
-  lean_builder: latest_version
   freezed_annotation: latest_version
   json_annotation: latest_version
   # ... other dependencies
@@ -76,23 +75,17 @@ class UserSchema extends SupabaseSchema {
 
 ### 2. Run the Generator
 
-The code generation process involves two steps:
+Run one command in the consuming package:
 
-**Step 1: Generate the base schema file with lean_builder**
-```bash
-dart run lean_builder build
-```
-This creates the `.supabase.dart` file containing your schema definitions.
-
-**Step 2: Generate the nested files (freezed models, JSON serialization, etc.)**
 ```bash
 dart run build_runner build
 ```
-This processes the `.supabase.dart` file to generate the final models.
 
-Or watch for changes (runs both builders):
+This generates `.supabase.dart`, `.supabase.freezed.dart`, and `.supabase.g.dart` in dependency order, including on a clean checkout.
+
+For development:
+
 ```bash
-dart run lean_builder watch &
 dart run build_runner watch
 ```
 
@@ -119,19 +112,9 @@ void main() async {
 }
 ```
 
-## Why `lean_builder`?
+## Generation requirements
 
-We use a two-step code generation process for optimal performance and compatibility:
-
-1. **`lean_builder`** - First generates the base `.supabase.dart` file containing your schema definitions, typed IDs, and select statements
-2. **`build_runner`** - Then processes the generated file to create the final freezed models, JSON serialization, and other nested code
-
-This separation allows for:
-- Faster incremental builds (only re-generates what changed)
-- Better compatibility with other code generators
-- Cleaner dependency management between generated files
-
-**Important**: Always run `lean_builder` first to generate the `.supabase.dart` file, then run `build_runner` to process it. Running `build_runner` alone without the `.supabase.dart` file will not work correctly.
+The generator requires Dart 3.11 or newer and analyzer >=13.3.0 <15.0.0. The example uses Dart 3.13 with Freezed 4 and recent JSON Serializable/build_runner. The schema builder runs before Freezed and JSON Serializable automatically. Keep generated `.supabase.dart` libraries included if you customize downstream `generate_for` filters.
 
 ## Contributing
 

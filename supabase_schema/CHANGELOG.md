@@ -1,3 +1,7 @@
+## 0.0.4
+
+* Remove the unused Lean Builder development dependency and update the example to use the single-command build_runner generation pipeline.
+
 ## 0.0.3
 
 * Bump `analyzer` constraint to `>=7.4.0 <11.0.0` (supports v10)
