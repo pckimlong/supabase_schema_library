@@ -2,6 +2,7 @@
 
 * **BREAKING**: Replace Lean Builder with build_runner. Run `dart run build_runner build` or `dart run build_runner watch` to generate `.supabase.dart`, `.supabase.freezed.dart`, and `.supabase.g.dart` in one pipeline.
 * **BREAKING**: Require Dart 3.11 or newer and analyzer `>=13.3.0 <15.0.0`; remove support for the previous analyzer 7–10 range.
+* Require `supabase_schema` 0.0.4.
 * Preserve AST-based field parsing so schemas can reference models that have not been generated yet on a clean build.
 * Support analyzer 13.3 and 14.x without dependency overrides. Verify compatibility with analyzer 13.3.0, 14.0.0, and 14.3.0, including older build_runner and JSON Serializable releases.
 * Add CI compatibility checks covering clean generation, cross-schema references, incremental updates, and unchanged-input builds.
